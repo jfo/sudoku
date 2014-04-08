@@ -81,6 +81,12 @@
         puzzle
         (solver (find-winner co puzzle)))))
 
-(solver tester)
-(vals (sort-by key (solver tester)))
+(defn print-puzzle [puzzle]
+  (print (clojure.string/join
+           (map println-str
+                (partition 9 (vals (sort-by key puzzle)))))))
+
+
+(print-puzzle (solver tester))
+
 
