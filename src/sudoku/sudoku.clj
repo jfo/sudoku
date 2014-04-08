@@ -1,13 +1,17 @@
+(ns sudoku.sudoku)
+
 (defn coords []
   "returns all possible coordinates in order"
   (for [x (range 9) y (range 9)]
     (vector x y)))
+(coords)
 
 (defn empty-map []
   "empty sudoku board for testing naive solution"
   (into {}
         (for [x (coords)]
           {x 0})))
+(empty-map)
 
 (defn return-column [x puzzle]
   "given an x value, returns a set of coords in that column"
@@ -15,11 +19,14 @@
          #(= (first %) x)
          (keys puzzle))))
 
+(return-column 0 tester)
+
 (defn return-row [x puzzle]
   "given a y value, returns a set of coords in that row"
   (set (filter
          #(= (last %) x)
          (keys puzzle))))
+(return-row 1 tester)
 
 
 (defn return-square-set [n]
@@ -30,12 +37,15 @@
       1 #{3 4 5}
       2 #{6 7 8})))
 
+(return-square-set 3)
+
 (defn return-x-square [coords puzzle]
   (set (filter
          #(contains?
             (return-square-set (first coords))
             (first %))
          (keys puzzle))))
+
 
 (defn return-y-square [coords puzzle]
   (set (filter
@@ -44,26 +54,31 @@
             (last %))
          (keys puzzle))))
 
+(return-x-square [0 0] tester)
+(return-y-square [0 0] tester)
+
 (defn return-square [coords]
   "intersects x and y sets to find square"
   (clojure.set/intersection
     (set (return-x-square coords (empty-map)))
     (set (return-y-square coords (empty-map)))))
 
-(defn show-friends [coords puzzle]
+(return-square [0 8])
+
+(defn show-friends [coords]
   "returns a set of all squares that need to be checked against for a given coord ('friends')"
   (vec (set (apply concat [(return-column (first coords) (empty-map))
                            (return-row (last coords) (empty-map))
                            (return-square coords)]))))
 
-(show-friend-set [0 0] (assoc tester [0 0] 8))
-(show-friends [0 0] tester)
+(show-friends [0 0])
+(def tester (empty-map))
 
 (defn show-friend-set [co puzzle]
   "returns a set of used values in friends"
   (set (vals (select-keys
                puzzle
-               (show-friends co puzzle)))))
+               (show-friends co)))))
 
 (defn find-winner [co puzzle]
   "iteratively discovers first available number against friend set for a given coord and puzzle"
@@ -71,8 +86,11 @@
         n 1]
       (if (not (contains? friend-set n))
         (assoc puzzle co n)
-        (recur friend-set (+ n 1)))))
+          (recur friend-set (+ n 1)))))
 
+(find-winner [0 0] tester)
+
+;
 
 (defn solver [puzzle]
   "recursively finds a winner for each cell. No checking against max val or tree traversal yet"
@@ -88,5 +106,8 @@
 
 
 (print-puzzle (solver tester))
+(solver tester)
+(print-puzzle tester)
+
 
 
