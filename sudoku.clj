@@ -1,11 +1,14 @@
 (defn coords []
   (for [x (range 9) y (range 9)] (vector x y)))
-(defn empty-map [] (into {} (for [x (coords)] {x nil})))
+(defn empty-map [] (into {} (for [x (coords)] {x 0})))
+
+(def tester (empty-map))
 
 (defn return-column [x puzzle]
   (set (filter #(= (first %) x) (keys puzzle))))
 (defn return-row [x puzzle]
   (set (filter #(= (last %) x) (keys puzzle))))
+
 
 (defn return-square-set [n]
   (let [i (quot n 3)]
@@ -30,26 +33,37 @@
   (return-row (last coords) (empty-map))
   (return-square coords)]))))
 
+(show-friend-set [0 0] (assoc tester [0 0] 8))
+(show-friends [0 0] tester)
+
 (defn show-friend-set [co puzzle]
-  (set (vals (select-keys (empty-map) (show-friends co puzzle)))))
+  (set (vals (select-keys puzzle (show-friends co puzzle)))))
 
 (show-friend-set [0 0], (assoc (empty-map) [0,0] 1))
 
 (defn find-winner [co puzzle]
   (loop [friend-set (show-friend-set co puzzle)
-        n 0]
-    (if (not (contains? friend-set n))
-      n
-      (if (= n 8)
-        nil
-        (recur friend-set (+ n 1))))))
+        n 1]
+      (if (not (contains? friend-set n))
+        (assoc puzzle co n)
+        (recur friend-set (+ n 1)))))
+
+(defn printer [puzzle]
+  (vals (sort-by key puzzle)))
+(printer tester)
 
 (defn solver [puzzle]
-  (let [co (first (some #(if (= nil (val %)) %) puzzle))]
-    (if (= nil co)
-      puzzle
-      (solver (assoc puzzle co (find-winner co puzzle))))))
+    (let [co (some #(if (= 0 (puzzle %)) % ) (coords))]
+      (if (= nil co)
+        puzzle
+        (solver (find-winner co puzzle)))))
 
+(last (coords))
 
+(printer (solver tester))
+(tester [0 0])
+(pprint (solver2 tester))
+
+(vals tester)
 (find-winner [1 0] (assoc (empty-map) [0, 0] 0) )
 
