@@ -30,11 +30,26 @@
   (return-row (last coords) (empty-map))
   (return-square coords)]))))
 
-(show-friends [0 7] (empty-map))
+(defn show-friend-set [co puzzle]
+  (set (vals (select-keys (empty-map) (show-friends co puzzle)))))
+
+(show-friend-set [0 0], (assoc (empty-map) [0,0] 1))
+
+(defn find-winner [co puzzle]
+  (loop [friend-set (show-friend-set co puzzle)
+        n 0]
+    (if (not (contains? friend-set n))
+      n
+      (if (= n 8)
+        nil
+        (recur friend-set (+ n 1))))))
+
+(defn solver [puzzle]
+  (let [co (first (some #(if (= nil (val %)) %) puzzle))]
+    (if (= nil co)
+      puzzle
+      (solver (assoc puzzle co (find-winner co puzzle))))))
 
 
-(return-column 0 (empty-map))
-(return-row 0 (empty-map))
-(return-square [0 8])
-
+(find-winner [1 0] (assoc (empty-map) [0, 0] 0) )
 
