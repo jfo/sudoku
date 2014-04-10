@@ -1,19 +1,21 @@
 (ns sudoku.puzzle-getter
-  (:require [net.cgrand.enlive-html :as html]
-            [org.httpkit.client :as client])
-  (:import (java.net URL)
-          (java.lang StringBuilder)
-          (java.io BufferedReader InputStreamReader)))
+  (:require [net.cgrand.enlive-html :as html]))
 
+(defn fetch-url [url]
+  (html/html-resource (java.net.URL. url)))
 
-(def page (client/get "http://www.free-sudoku.com/sudoku.php"))
-(def page2 (client/get "http://www.free-sudoku.com/sudoku.php"))
+(def ^:dynamic *base-url* "http://www.free-sudoku.com/sudoku.php")
 
-(require 'clojure.pprint)
-(clojure.pprint/pprint (html/html-resource @page))
+(defn get-filled []
+  (html/select (fetch-url *base-url*) [:div.pred2]))
 
+(first (get-filled))
 
-(def derp (range 1 82))
-(map inc (range 81))
+(defn get-puzzle []
+  (reduce (fn [out car] (assoc out
+                               (read-string (get-in car [:attrs :id]))
+                               (read-string (first (:content car)))))
+          {}
+          (get-filled)))
 
-
+; (get-puzzle)
