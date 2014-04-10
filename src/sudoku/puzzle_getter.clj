@@ -9,8 +9,6 @@
 (defn get-filled []
   (html/select (fetch-url *base-url*) [:div.pred2]))
 
-(first (get-filled))
-
 (defn get-puzzle []
   (reduce (fn [out car] (assoc out
                                (read-string (get-in car [:attrs :id]))
@@ -18,4 +16,53 @@
           {}
           (get-filled)))
 
-; (get-puzzle)
+
+(defn coords []
+  "returns all possible coordinates in order"
+  (for [x (range 9) y (range 9)]
+    (vector x y)))
+
+(defn coord [i]
+  [(quot (dec i) 8) (mod (dec i) 8)])
+
+(defn empty-map []
+  "empty sudoku board for testing naive solution"
+  (into {}
+        (for [x (coords)]
+          {x 0})))
+
+(def tester (empty-map))
+
+(def sample (get-puzzle))
+
+(identity sample)
+
+(defn new-puzzle [puzzle]
+  (loop [puzzle puzzle
+         i 1]
+    (if (= i 82)
+      puzzle
+      (if (= (puzzle i) nil)
+        (recur (assoc puzzle i 0) (inc i))
+        (recur puzzle (inc i))))))
+
+
+
+(new-puzzle sample)
+
+
+; this one!
+(defn gen-puzzle []
+  (into {} (map (fn [[key val]] [(coord key) val]) (new-puzzle sample)))
+  )
+; this one!
+
+(coord 10)
+
+(map identity sample)
+
+(eval tester)
+(coords)
+(eval sample)
+
+
