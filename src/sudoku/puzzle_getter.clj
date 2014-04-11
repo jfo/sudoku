@@ -56,11 +56,3 @@
   )
 ; this one!
 
-
-(map identity sample)
-
-(eval tester)
-(coords)
-(eval sample)
-
-

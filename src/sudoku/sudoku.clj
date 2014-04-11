@@ -53,30 +53,10 @@
                puzzle
                (show-friends co)))))
 
-(defn find-winner [co puzzle]
-  "iteratively discovers first available number against friend set for a given coord and puzzle"
-  (loop [friend-set (show-friend-set co puzzle)
-        n 1]
-      (if (not (contains? friend-set n))
-        (assoc puzzle co n)
-          (recur friend-set (+ n 1)))))
-
-(defn solver [puzzle]
-  "recursively finds a winner for each cell. No checking against max val or tree traversal yet"
-    (let [co (some #(if (= 0 (puzzle %)) % ) (coords))]
-      (if (= nil co)
-        puzzle
-        (solver (find-winner co puzzle)))))
-
 (defn print-puzzle [puzzle]
   (print (clojure.string/join
            (map println-str
                 (partition 9 (vals (sort-by key puzzle)))))))
-
-(def puzzle (gen-puzzle))
-(coords)
-(puzzle [0 8])
-(sort-by key puzzle)
 
 (defn deterministic-cell-solve [co puzzle]
   (if (= (puzzle co) 0)
@@ -84,6 +64,28 @@
                                    (show-friend-set co puzzle))
     (puzzle co)))
 
+
 (for [co (coords)]
   (deterministic-cell-solve co puzzle))
 
+(defn deterministic-solve [puzzle]
+  (reduce (fn [acc car]
+            (if (and (= (val car) 0) (= (count (deterministic-cell-solve (key car) puzzle)) 1))
+              (assoc acc (key car) (first (deterministic-cell-solve (key car) puzzle)))
+              (assoc acc (key car) (val car))))
+          {}
+          puzzle))
+
+
+; deterministic solve works
+
+(def puzzle (gen-puzzle))
+(print-puzzle puzzle)
+
+(loop [puzzle puzzle
+       i 1]
+  (print-puzzle puzzle)
+  (println)
+  (if (> i 100)
+    nil
+    (recur (deterministic-solve puzzle) (inc i))))
