@@ -23,15 +23,14 @@
     (vector x y)))
 
 (defn coord [i]
-  [(quot (dec i) 8) (mod (dec i) 8)])
+  [(quot (dec i) 9) (mod (dec i) 9)])
+(map #(coord %) (range 1 82))
 
 (defn empty-map []
   "empty sudoku board for testing naive solution"
   (into {}
         (for [x (coords)]
           {x 0})))
-
-(def tester (empty-map))
 
 (def sample (get-puzzle))
 
@@ -53,11 +52,10 @@
 
 ; this one!
 (defn gen-puzzle []
-  (into {} (map (fn [[key val]] [(coord key) val]) (new-puzzle sample)))
+  (into {} (map (fn [[key val]] [(coord key) val]) (new-puzzle (get-puzzle))))
   )
 ; this one!
 
-(coord 10)
 
 (map identity sample)
 

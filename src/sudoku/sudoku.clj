@@ -1,5 +1,5 @@
 (ns sudoku.sudoku
-  (:require [sudoku.puzzle-getter :refer [gen-puzzle]]))
+  (:require [sudoku.puzzle-getter :refer [gen-puzzle empty-map coords]]))
 
 (defn return-column [x puzzle]
   "given an x value, returns a set of coords in that column"
@@ -73,4 +73,17 @@
            (map println-str
                 (partition 9 (vals (sort-by key puzzle)))))))
 
-(print-puzzle (gen-puzzle))
+(def puzzle (gen-puzzle))
+(coords)
+(puzzle [0 8])
+(sort-by key puzzle)
+
+(defn deterministic-cell-solve [co puzzle]
+  (if (= (puzzle co) 0)
+           (clojure.set/difference #{0 1 2 3 4 5 6 7 8 9}
+                                   (show-friend-set co puzzle))
+    (puzzle co)))
+
+(for [co (coords)]
+  (deterministic-cell-solve co puzzle))
+
