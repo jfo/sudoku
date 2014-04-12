@@ -65,9 +65,6 @@
     (puzzle co)))
 
 
-(for [co (coords)]
-  (deterministic-cell-solve co puzzle))
-
 (defn deterministic-solve [puzzle]
   (reduce (fn [acc car]
             (if (and (= (val car) 0) (= (count (deterministic-cell-solve (key car) puzzle)) 1))
@@ -76,11 +73,38 @@
           {}
           puzzle))
 
+(defn solve-all [puzzle]
+ (cond
+   (= puzzle (deterministic-solve puzzle)) puzzle
+   :else (recur (deterministic-solve puzzle))))
+
+
+(defn possibles [puzzle]
+  (reduce (fn [acc cell]
+            (if (= 0 (val cell))
+              (assoc acc (key cell) (show-friend-set (key cell) puzzle))
+              (assoc acc (key cell) (val cell))))
+          {}
+          puzzle))
+
+(possibles puzzle)
+
+  (show-friend-set [0 0] puzzle)
+
+
 
 ; deterministic solve works
 
 (def puzzle (gen-puzzle))
+
 (print-puzzle puzzle)
+(print-puzzle (solve-all puzzle))
+
+(do
+  (print-puzzle puzzle)
+  (println)
+  (print-puzzle (solve-all puzzle)))
+
 
 (loop [puzzle puzzle
        i 1]
