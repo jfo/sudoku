@@ -79,37 +79,53 @@
    :else (recur (deterministic-solve puzzle))))
 
 
+
 (defn possibles [puzzle]
   (reduce (fn [acc cell]
             (if (= 0 (val cell))
-              (assoc acc (key cell) (show-friend-set (key cell) puzzle))
+              (assoc acc (key cell) (deterministic-cell-solve (key cell) puzzle))
               (assoc acc (key cell) (val cell))))
           {}
           puzzle))
 
-(possibles puzzle)
+(defn guess [puzzle]
+  (let [poss (first (sort-by #(count (val %))
+                      (into {}
+                            (filter
+                              #(= (type (val %))
+                                  (type #{}))
+                              (possibles puzzle)))))]
+    (assoc puzzle (key poss) (first (remove zero? (val poss))))))
 
-  (show-friend-set [0 0] puzzle)
+(defn solved? [puzzle]
+  (not (contains? (set (vals puzzle)) 0)))
+
+(defn complete-solve [puzzle]
+  (let [board (solve-all puzzle)]
+    (if (solved? board)
+      board
+      (if (contains? (vec (vals (possibles board))) #{})
+        (throw (Exception. "Dead end"))
+        (try
+          (complete-solve (guess puzzle)))))))
 
 
 
-; deterministic solve works
+; demo stuff
 
 (def puzzle (gen-puzzle))
 
-(print-puzzle puzzle)
-(print-puzzle (solve-all puzzle))
-
 (do
-  (print-puzzle puzzle)
+(print-puzzle (guess puzzle))
   (println)
-  (print-puzzle (solve-all puzzle)))
+(print-puzzle puzzle))
 
+(print-puzzle (complete-solve puzzle))
 
-(loop [puzzle puzzle
-       i 1]
-  (print-puzzle puzzle)
-  (println)
-  (if (> i 100)
-    nil
-    (recur (deterministic-solve puzzle) (inc i))))
+(print-puzzle (solve-all puzzle))
+(print-puzzle(possibles (solve-all puzzle)))
+
+(print-puzzle puzzle)
+((possibles puzzle) [0 0])
+
+(show-friend-set [0 0] puzzle)
