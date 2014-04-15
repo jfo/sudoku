@@ -116,21 +116,25 @@
          (throw (Exception. "Ughh"))
          (try
            (rec-solve
-             (assoc puzzle
-                    (first (guess puzzle tried))
-                    (last (guess puzzle tried)))
+             (assoc board
+                    (first (guess board tried))
+                    (last (guess board tried)))
              (assoc tried
-                    (first (guess puzzle tried))
+                    (first (guess board tried))
                     (clojure.set/union
-                      #{(last (guess puzzle tried))}
-                      #{(first (guess puzzle tried)) (possibles puzzle)})))))))))
+                      #{(last (guess board tried))}
+                       ((possibles board) (first (guess board tried))))))))))))
 
 ; demo stuff
 
 ; (def puzzle (gen-puzzle))
+; (do 
 ; (print-puzzle puzzle)
+;   (println)
 ; (print-puzzle (solve-all puzzle))
-; (print-puzzle (possibles (solve-all puzzle)))
+;   )
+
+; (possibles (solve-all puzzle))
 ; (guess puzzle)
 
 ; (print-puzzle (rec-solve puzzle))
