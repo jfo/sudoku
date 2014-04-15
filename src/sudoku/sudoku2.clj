@@ -78,17 +78,7 @@
    (= puzzle (deterministic-solve puzzle)) puzzle
    :else (recur (deterministic-solve puzzle))))
 
-
-(defn possibles [puzzle]
-  (reduce (fn [acc cell]
-            (if (= 0 (val cell))
-              (assoc acc (key cell) (deterministic-cell-solve (key cell) puzzle))
-              (dissoc acc (key cell))))
-          {}
-          puzzle))
-
-; =======================================================================
-
+; ==============================================
 
 (defn all-possible-moves [puzzle]
   (mapcat (fn [pair]
@@ -97,40 +87,9 @@
                 [coords move])))
           (possibles puzzle)))
 
-(defn make-move [puzzle move]
-  (assoc puzzle (first move) (last move)))
 
-; (defn solved? [puzzle]
-;   (every? (complement zero?) (vals puzzle)))
-
-(defn solved-cell? [co puzzle]
-  (= (clojure.set/union (show-friend-set co puzzle) #{(puzzle co)})
-  #{1 2 3 4 5 6 7 8 9}))
-(defn solved? [puzzle]
-  (every? #(solved-cell? % puzzle) (keys puzzle)))
-
-
-(declare solve)
-
-(defn try-moves [puzzle moves]
-    (when (empty? moves)
-          (throw (Exception. "no valid moves")))
-    (let [next-puzzle (make-move puzzle (first moves))]
-          (try
-            (solve next-puzzle)
-            (catch Exception e 
-              (try-moves puzzle (rest moves))))))
-
-(defn solve [puzzle]
-  (let [new-puzzle (solve-all puzzle)]
-    (if (solved? new-puzzle)
-          new-puzzle
-          (try-moves new-puzzle (all-possible-moves new-puzzle)))))
 
 
 (def puzzle (gen-puzzle))
-(print-puzzle puzzle)
-  (println)
 (print-puzzle (solve-all puzzle))
-  (println)
-(print-puzzle (solve puzzle))
+; (print-puzzle (solve puzzle))
