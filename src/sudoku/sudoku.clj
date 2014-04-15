@@ -88,17 +88,20 @@
           {}
           puzzle))
 
+
+
 (defn guess [puzzle]
-  (let [poss (first (sort-by #(count (val %))
-                      (into {}
-                            (filter
-                              #(= (type (val %))
-                                  (type #{}))
-                              (possibles puzzle)))))]
-    (assoc puzzle (key poss) (first (remove zero? (val poss))))))
+  (let [poss (first (filter #(not (= (type 6) (type(val %)))) (possibles puzzle)))]
+    (if (not= nil (first(last poss)))
+      (assoc puzzle (first poss) (first (last poss)))))
+      puzzle)
+
 
 (defn solved? [puzzle]
-  (not (contains? (set (vals puzzle)) 0)))
+  (= (count (filter set? (map #(deterministic-cell-solve (key %) puzzle) puzzle))) 0))
+
+(solved? puzzle)
+(solved? (solve-all puzzle))
 
 (defn complete-solve [puzzle]
   (let [board (solve-all puzzle)]
@@ -107,25 +110,29 @@
       (if (contains? (vec (vals (possibles board))) #{})
         (throw (Exception. "Dead end"))
         (try
-          (complete-solve (guess puzzle)))))))
-
+          (complete-solve (guess board)))))))
 
 
 ; demo stuff
 
 (def puzzle (gen-puzzle))
+(print-puzzle puzzle)
+(deterministic-cell-solve [0 4] puzzle)
 
-(do
-(print-puzzle (guess puzzle))
+(print-puzzle (possibles (solve-all puzzle)))
+
+(do 
+(print-puzzle (solve-all puzzle))
   (println)
-(print-puzzle puzzle))
+(print-puzzle (guess (solve-all puzzle))))
 
 (print-puzzle (complete-solve puzzle))
 
-(print-puzzle (solve-all puzzle))
+(print-puzzle (complete-solve puzzle))
+
+
 (print-puzzle(possibles (solve-all puzzle)))
 
-(print-puzzle puzzle)
 ((possibles puzzle) [0 0])
 
 (show-friend-set [0 0] puzzle)
