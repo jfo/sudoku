@@ -79,60 +79,58 @@
    :else (recur (deterministic-solve puzzle))))
 
 
-
 (defn possibles [puzzle]
   (reduce (fn [acc cell]
             (if (= 0 (val cell))
               (assoc acc (key cell) (deterministic-cell-solve (key cell) puzzle))
-              (assoc acc (key cell) (val cell))))
+              (dissoc acc (key cell))))
           {}
           puzzle))
 
 
+; everything below this line sucks and doesn't work and will never work.
+; =======================================================================
 
-(defn guess [puzzle]
-  (let [poss (first (filter #(not (= (type 6) (type(val %)))) (possibles puzzle)))]
-    (if (not= nil (first(last poss)))
-      (assoc puzzle (first poss) (first (last poss)))))
-      puzzle)
+(defn guess
+  ([puzzle] (guess puzzle {}))
+  ([puzzle tried]
+   (let [g (reduce (fn [acc cell]
+                     (assoc acc
+                            (key cell)
+                            (clojure.set/difference
+                              (val cell)
+                              (tried (key cell)))))
+                   {}
+                   (possibles puzzle))]
+     (let [guess (sort-by #(count (val %)) g)]
+     [(first (first guess)) (first (last (first guess)))]   ))))
 
 
-(defn solved? [puzzle]
-  (= (count (filter set? (map #(deterministic-cell-solve (key %) puzzle) puzzle))) 0))
-
-(solved? puzzle)
-(solved? (solve-all puzzle))
-
-(defn complete-solve [puzzle]
-  (let [board (solve-all puzzle)]
-    (if (solved? board)
-      board
-      (if (contains? (vec (vals (possibles board))) #{})
-        (throw (Exception. "Dead end"))
-        (try
-          (complete-solve (guess board)))))))
-
+(defn rec-solve
+  ([puzzle] (rec-solve puzzle {}))
+  ([puzzle tried]
+   (let [board (solve-all puzzle)]
+     (if (not (contains? (set (vals board)) 0))
+       board
+       (if (contains? (set (vals (possibles board))) #{})
+         (throw (Exception. "Ughh"))
+         (try
+           (rec-solve
+             (assoc puzzle
+                    (first (guess puzzle tried))
+                    (last (guess puzzle tried)))
+             (assoc tried
+                    (first (guess puzzle tried))
+                    (clojure.set/union
+                      #{(last (guess puzzle tried))}
+                      #{(first (guess puzzle tried)) (possibles puzzle)})))))))))
 
 ; demo stuff
 
-(def puzzle (gen-puzzle))
-(print-puzzle puzzle)
-(deterministic-cell-solve [0 4] puzzle)
+; (def puzzle (gen-puzzle))
+; (print-puzzle puzzle)
+; (print-puzzle (solve-all puzzle))
+; (print-puzzle (possibles (solve-all puzzle)))
+; (guess puzzle)
 
-(print-puzzle (possibles (solve-all puzzle)))
-
-(do 
-(print-puzzle (solve-all puzzle))
-  (println)
-(print-puzzle (guess (solve-all puzzle))))
-
-(print-puzzle (complete-solve puzzle))
-
-(print-puzzle (complete-solve puzzle))
-
-
-(print-puzzle(possibles (solve-all puzzle)))
-
-((possibles puzzle) [0 0])
-
-(show-friend-set [0 0] puzzle)
+; (print-puzzle (rec-solve puzzle))
