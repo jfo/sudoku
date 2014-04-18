@@ -21,19 +21,31 @@
       1 #{3 4 5}
       2 #{6 7 8})))
 
+
 (defn return-x-square [coords puzzle]
   (set (filter
-         #(contains?
-            (return-square-set (first coords))
-            (first %))
+         #(some
+           #{(first %)}
+            (return-square-set (first coords)))
          (keys puzzle))))
+
 
 (defn return-y-square [coords puzzle]
   (set (filter
-         #(contains?
-            (return-square-set (last coords))
-            (last %))
+         #(some
+            #{(last %)}
+            (return-square-set (last coords)))
          (keys puzzle))))
+
+; (return-column 0 puzzle)
+; (return-row 0 puzzle)
+; (return-square-set 0)
+; (return-square-set 2)
+
+; (return-x-square [0 0] puzzle)
+; (return-y-square [0 0] puzzle)
+; (return-square [0 0])
+; (return-square [0 8])
 
 (defn return-square [coords]
   "intersects x and y sets to find square"
@@ -62,15 +74,23 @@
 
 (defn cell-poss [co puzzle]
   (if (= (puzzle co) 0)
-           (clojure.set/difference #{0 1 2 3 4 5 6 7 8 9}
+           (clojure.set/difference #{1 2 3 4 5 6 7 8 9}
                                    (show-friend-set co puzzle))
     (puzzle co)))
 
-(defn all-cell-poss [co puzzle]
-   (clojure.set/difference #{0 1 2 3 4 5 6 7 8 9}
-                           (show-friend-set co puzzle)
-                           #{(puzzle co)}))
+(defn deterministic-cell-solve [co puzzle]
+  (if (= (puzzle co) 0)
+           (clojure.set/difference #{1 2 3 4 5 6 7 8 9}
+                                   (show-friend-set co puzzle))
+    (puzzle co)))
 
+(defn possibles [puzzle]
+  (reduce (fn [acc cell]
+            (if (= 0 (val cell))
+              (assoc acc (key cell) (deterministic-cell-solve (key cell) puzzle))
+              (dissoc acc (key cell))))
+          {}
+          puzzle))
 
 (defn all-possible-moves [puzzle]
   (mapcat (fn [pair]
@@ -79,10 +99,6 @@
                 [coords move])))
           (possibles puzzle)))
 
-(all-possible-moves puzzle)
-(sort-by #(count (val %))(possibles (solve-all puzzle)))
-
-; ==============================================
 
 (defn dead-cell? [puzzle co]
    (contains?
@@ -92,53 +108,54 @@
      (puzzle co)))
 
 (defn dead-puzzle? [puzzle]
-  (if (contains? (set (all-possible-moves puzzle)) #{})
-    true
-    (not (every? false? (map #(dead-cell? puzzle %) (keys puzzle))))))
-
-(defn deterministic-solve [puzzle]
-  (reduce (fn [acc car]
-            (if (and (= (val car) 0) (= (count (cell-poss (key car) puzzle)) 1))
-              (assoc acc (key car) (first (cell-poss (key car) puzzle)))
-              (assoc acc (key car) (val car))))
-          {}
-          puzzle))
-
-(defn solve-all [puzzle]
- (if (dead-puzzle? puzzle)
-   (throw (Exception. "Noooo!"))
-   (cond
-     (= puzzle (deterministic-solve puzzle)) puzzle
-     :else (recur (deterministic-solve puzzle)))))
+  (empty? (all-possible-moves puzzle)))
 
 ; ==============================================
 
 (defn make-move [puzzle move]
-  (let [new-puzzle (assoc puzzle (first move) (last move))]
-    (if (dead-puzzle? new-puzzle)
-      (throw (Exception. "Noooo!"))
-      new-puzzle)))
+  (assoc puzzle (first move) (last move)))
 
-(defn try-moves [puzzle moves]
-    (let [next-puzzle (make-move puzzle (first moves))]
-          (try
-            (solve next-puzzle)
-            (catch Exception e
-              (try-moves puzzle (rest moves))))))
+(defn won? [puzzle]
+  (not (some #{0} (vals puzzle))))
 
-(defn solve [puzzle]
-  (let [new-puzzle (solve-all puzzle)]
-    (if (not (contains? (set (vals new-puzzle)) 0))
-          new-puzzle
-          (try-moves new-puzzle (all-possible-moves new-puzzle)))))
+(defn depth-solve [puzzle]
+  (if (won? puzzle)
+    [puzzle]
+    (if (dead-puzzle? puzzle)
+      []
+      (let [all-solns (map (fn [move]
+                             (let [new-puzzle (make-move puzzle move)]
+                               (depth-solve new-puzzle)))
+                           (all-possible-moves puzzle))]
+        (apply concat all-solns)))))
 
 
+(defn graph-solve [puzzles]
+  (if (empty? puzzles)
+    nil
+    (let [p (first puzzles)]
+      (if (won? p)
+        p
+        (graph-solve (concat
+                       (map
+                         #(make-move p %)
+                         (all-possible-moves p)) 
+                       (rest puzzles)))))))
 
 
+(graph-solve puzzle)
 
-(def puzzle (gen-puzzle))
-(print-puzzle puzzle)
-
-(all-possible-moves puzzle)
 (print-puzzle (solve-all puzzle))
+; (dead-puzzle? puzzle)
+; (won? puzzle)
+; (won? (make-move (solve-all puzzle) [[6 0] 6]))
+; (print-puzzle (make-move (solve-all puzzle) [[6 0] 6]))
+; (depth-solve (solve-all puzzle))
+; (take 1 (depth-solve puzzle))
+; (all-possible-moves (solve-all puzzle))
+
+; (def puzzle (gen-puzzle))
+; (print-puzzle puzzle)
+; (all-possible-moves puzzle)
+; (print-puzzle (solve-all puzzle))
 ; (print-puzzle (solve puzzle))

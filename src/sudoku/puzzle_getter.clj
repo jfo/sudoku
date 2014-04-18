@@ -4,7 +4,7 @@
 (defn fetch-url [url]
   (html/html-resource (java.net.URL. url)))
 
-(def ^:dynamic *base-url* "http://www.free-sudoku.com/sudoku.php?mode=3")
+(def ^:dynamic *base-url* "http://www.free-sudoku.com/sudoku.php?mode=5")
 
 (defn get-filled []
   (html/select (fetch-url *base-url*) [:div.pred2]))

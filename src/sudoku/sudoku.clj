@@ -48,7 +48,13 @@
                            (return-square coords)]))))
 
 (defn show-friend-set [co puzzle]
-  "returns a set of used values in friends"
+  "#cell_poss - returns a set of used values in friends"
+  (set (vals (select-keys
+               puzzle
+               (show-friends co)))))
+
+(defn show-all-friend-set [co puzzle]
+  "all possibilties for even a solved cell"
   (set (vals (select-keys
                puzzle
                (show-friends co)))))
@@ -57,6 +63,9 @@
   (print (clojure.string/join
            (map println-str
                 (partition 9 (vals (sort-by key puzzle)))))))
+
+(defn dead-puzzle? [puzzle]
+  )
 
 (defn deterministic-cell-solve [co puzzle]
   (if (= (puzzle co) 0)
@@ -74,9 +83,11 @@
           puzzle))
 
 (defn solve-all [puzzle]
- (cond
-   (= puzzle (deterministic-solve puzzle)) puzzle
-   :else (recur (deterministic-solve puzzle))))
+  (if (dead-puzzle? puzzle)
+    (throw (Exception. "Dead end"))
+   (cond
+     (= puzzle (deterministic-solve puzzle)) puzzle
+     :else (recur (deterministic-solve puzzle)))))
 
 
 (defn possibles [puzzle]
@@ -97,11 +108,17 @@
                 [coords move])))
           (possibles puzzle)))
 
+(defn dead-puzzle? [puzzle]
+  (if (contains? (set (vals (possibles puzzle))) #{})
+    true
+    false))
+
+
 (defn make-move [puzzle move]
   (assoc puzzle (first move) (last move)))
 
-; (defn solved? [puzzle]
-;   (every? (complement zero?) (vals puzzle)))
+(defn solved? [puzzle]
+  (every? (complement zero?) (vals puzzle)))
 
 (defn solved-cell? [co puzzle]
   (= (clojure.set/union (show-friend-set co puzzle) #{(puzzle co)})
@@ -118,7 +135,7 @@
     (let [next-puzzle (make-move puzzle (first moves))]
           (try
             (solve next-puzzle)
-            (catch Exception e 
+            (catch Exception e
               (try-moves puzzle (rest moves))))))
 
 (defn solve [puzzle]
@@ -130,7 +147,7 @@
 
 (def puzzle (gen-puzzle))
 (print-puzzle puzzle)
-  (println)
+(solved? puzzle)
+(solved? (solve-all puzzle))
 (print-puzzle (solve-all puzzle))
-  (println)
 (print-puzzle (solve puzzle))
