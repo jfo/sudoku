@@ -1,17 +1,20 @@
 (ns sudoku.sudoku
   (:require [sudoku.puzzle-getter :refer [gen-puzzle empty-map coords]]))
 
-(defn return-column [x puzzle]
-  "given an x value, returns a set of coords in that column"
+(defn return-row [x]
+  "given an x value, returns a set of coords in that row"
   (set (filter
          #(= (first %) x)
-         (keys puzzle))))
+         (coords))))
 
-(defn return-row [x puzzle]
-  "given a y value, returns a set of coords in that row"
+(defn return-column [x]
+  "given a y value, returns a set of coords in that column"
   (set (filter
          #(= (last %) x)
-         (keys puzzle))))
+         (coords))))
+
+(return-row 4)
+(return-row 4)
 
 (defn return-square-set [n]
   "given a number, returns a set to which it belongs"
@@ -20,6 +23,9 @@
       0 #{0 1 2}
       1 #{3 4 5}
       2 #{6 7 8})))
+
+(return-row  8)
+(return-column 5)
 
 (defn return-x-square [coords puzzle]
   (set (filter
