@@ -32,9 +32,9 @@
         (for [x (coords)]
           {x 0})))
 
-(def sample (get-puzzle))
+; (def sample (get-puzzle))
 
-(identity sample)
+; (identity sample)
 
 (defn new-puzzle [puzzle]
   (loop [puzzle puzzle
@@ -47,7 +47,7 @@
 
 
 
-(new-puzzle sample)
+; (new-puzzle sample)
 
 
 ; this one!
