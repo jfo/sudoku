@@ -96,18 +96,22 @@
 
 ; =======================================================================
 
+(defn possible-guesses [puzzle]
+  (reduce
+    (fn [acc el]
+      (if (> (count (val el)) 1)
+        (assoc acc (key el) (val el))
+        acc))
+    {}
+    (possibles puzzle)))
 
 (defn all-possible-moves [puzzle]
   (mapcat (fn [pair]
             (let [[coords moves] pair]
               (for [move moves]
                 [coords move])))
-          (sort-by
-            #(count (val %))
-            (possibles puzzle))))
+          (possible-guesses puzzle)))
 
-(filter #(> (count (val %)) 1) (possibles puzzle))
-; (all-possible-moves (solve-all puzzle))
 
 (defn dead-puzzle? [puzzle]
   (if (contains? (set (vals (possibles puzzle))) #{})
