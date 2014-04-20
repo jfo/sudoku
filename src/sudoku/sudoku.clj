@@ -1,11 +1,11 @@
 (ns sudoku.sudoku
   (:require [sudoku.puzzle-getter :refer [gen-puzzle empty-map coords]]))
 
-(defn return-column [x puzzle]
+(defn return-column [x]
   "given an x value, returns a set of coords in that column"
   (set (filter
          #(= (first %) x)
-         (keys puzzle))))
+         (coords))))
 
 (defn return-row [x puzzle]
   "given a y value, returns a set of coords in that row"
