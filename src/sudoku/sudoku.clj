@@ -1,7 +1,6 @@
 (ns sudoku.sudoku
   (:require [sudoku.puzzle-getter :refer [gen-puzzle empty-map coords]]))
 
-(def puzzle (gen-puzzle))
 
 (defn return-row [x]
   "given an x value, returns a set of coords in that column"
@@ -81,8 +80,8 @@
 
 (defn deterministic-solve [puzzle]
   (reduce (fn [acc car]
-            (if (and (= (val car) 0) (= (count (deterministic-cell-solve (key car) puzzle)) 1))
-              (assoc acc (key car) (first (deterministic-cell-solve (key car) puzzle)))
+            (if (and (= (val car) 0) (= (count (cell-poss (key car) puzzle)) 1))
+              (assoc acc (key car) (first (cell-poss (key car) puzzle)))
               (assoc acc (key car) (val car))))
           {}
           puzzle))
@@ -112,36 +111,29 @@
                 [coords move])))
           (possible-guesses puzzle)))
 
-
 (defn dead-puzzle? [puzzle]
-  (if (contains? (set (vals (possibles puzzle))) #{})
+  (if (some #{} (set (vals (possibles puzzle))))
     true
     false))
 
-
 (defn make-move [puzzle move]
-  (assoc puzzle (first move) (last move)))
+  (print-puzzle puzzle)
+  (read-line)
+  (if (dead-puzzle? puzzle)
+    (throw (Exception. "Dead end"))
+    (assoc puzzle (first move) (last move))))
 
 (defn solved? [puzzle]
-  (every? (complement zero?) (vals puzzle)))
-
-(defn solved-cell? [co puzzle]
-  (= (clojure.set/union (show-friend-set co puzzle) #{(puzzle co)})
-  #{1 2 3 4 5 6 7 8 9}))
-(defn solved? [puzzle]
-  (every? #(solved-cell? % puzzle) (keys puzzle)))
-
+    (every? (complement zero?) (vals puzzle)))
 
 (declare solve)
 
 (defn try-moves [puzzle moves]
-    (when (empty? moves)
-          (throw (Exception. "no valid moves")))
-    (let [next-puzzle (make-move puzzle (first moves))]
-          (try
-            (solve next-puzzle)
-            (catch Exception e
-              (try-moves puzzle (rest moves))))))
+  (let [next-puzzle (make-move puzzle (first moves))]
+    (try
+      (solve next-puzzle)
+      (catch Exception e
+        (try-moves puzzle (rest moves))))))
 
 (defn solve [puzzle]
   (let [new-puzzle (solve-all puzzle)]
@@ -149,4 +141,11 @@
           new-puzzle
           (try-moves new-puzzle (all-possible-moves new-puzzle)))))
 
-
+(defn -main []
+  (let [puzzle (gen-puzzle)]
+    (print-puzzle puzzle)
+    (print-puzzle (solve-all puzzle))
+    (println "ok")
+    (println (read-line))
+    (read-line)
+    (print-puzzle (solve puzzle))))
